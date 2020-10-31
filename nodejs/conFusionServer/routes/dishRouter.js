@@ -10,7 +10,8 @@ const dishRouter = express.Router();
 dishRouter.use(bodyParser.json());
 
 // add all the methods for the / endpoint
-dishRouter.route('/').get((req,res,next) => {
+dishRouter.route('/')
+    .get((req,res,next) => {
     Dishes.find({})
         .then(dishes => {
             res.statusCode = 200;
@@ -18,7 +19,8 @@ dishRouter.route('/').get((req,res,next) => {
             res.json(dishes);
         }, (err) => next(err))
         .catch(err => next(err))
-}).post((req, res, next) => {
+})
+    .post((req, res, next) => {
     Dishes.create(req.body).then((dish) => {
         console.log('Dish created');
         res.statusCode = 200;
@@ -26,10 +28,12 @@ dishRouter.route('/').get((req,res,next) => {
         res.json(dish);
     }, (err) => next(err))
         .catch(err => next(err));
-}).put((req, res, next) => {
+})
+    .put((req, res, next) => {
     res.statusCode = 403;
     res.end('PUT operation not supported on /dishes');
-}).delete((req, res, next) => {
+})
+    .delete((req, res, next) => {
     Dishes.remove({}).then(resp => {
         res.statusCode = 200;
         res.setHeader('Content-Type', 'application/json');
@@ -39,7 +43,8 @@ dishRouter.route('/').get((req,res,next) => {
 });
 
 // add all the methods for the /:dishId endpoint
-dishRouter.route('/:dishId').get((req,res,next) => {
+dishRouter.route('/:dishId')
+    .get((req,res,next) => {
     Dishes.findById(req.params.dishId)
         .then(dish => {
             res.statusCode = 200;
@@ -47,7 +52,8 @@ dishRouter.route('/:dishId').get((req,res,next) => {
             res.json(dish);
         }, (err) => next(err))
         .catch(err => next(err))
-}).put((req, res, next) => {
+})
+    .put((req, res, next) => {
     Dishes.findByIdAndUpdate(req.params.dishId,
         {
             $set: req.body
@@ -58,10 +64,12 @@ dishRouter.route('/:dishId').get((req,res,next) => {
             res.json(dish);
         }, (err) => next(err))
         .catch(err => next(err))
-}).post((req, res, next) => {
+})
+    .post((req, res, next) => {
     res.statusCode = 403;
     res.end(`POST operation not supported on /dishes/${req.params.dishId}`);
-}).delete((req, res, next) => {
+})
+    .delete((req, res, next) => {
     Dishes.findByIdAndRemove(req.params.dishId).then(resp => {
         res.statusCode = 200;
         res.setHeader('Content-Type', 'application/json');
@@ -70,7 +78,8 @@ dishRouter.route('/:dishId').get((req,res,next) => {
         .catch(err => next(err))
 });
 
-dishRouter.route('/:dishId/comments').get((req, res, next) => {
+dishRouter.route('/:dishId/comments')
+    .get((req, res, next) => {
     Dishes.findById(req.params.dishId).then(dish => {
         if (dish != null) {
             res.statusCode = 200;
@@ -82,7 +91,8 @@ dishRouter.route('/:dishId/comments').get((req, res, next) => {
             return next(err);
         }
     }, err => next(err))
-}).post((req, res, next) => {
+})
+    .post((req, res, next) => {
     Dishes.findById(req.params.dishId).then(dish =>{
         if (dish != null) {
             dish.comments.push(req.body);
@@ -99,10 +109,12 @@ dishRouter.route('/:dishId/comments').get((req, res, next) => {
 
     }, err => next(err))
         .catch(err => next(err))
-}).put((req, res, next) => {
+})
+    .put((req, res, next) => {
     res.statusCode = 403;
     res.end(`PUT operation not supported on /dishes/ ${req.params.dishId}.`)
-}).delete((req, res, next) => {
+})
+    .delete((req, res, next) => {
     Dishes.findById(req.params.dishId).then(dish => {
         if (dish != null) {
             for (var i = dish.comments.length - 1 ; i >= 0 ; i--) {
