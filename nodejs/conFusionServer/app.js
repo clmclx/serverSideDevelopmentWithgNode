@@ -7,7 +7,7 @@ var logger = require('morgan');
 var indexRouter = require('./routes/index');
 var usersRouter = require('./routes/users');
 var dishesRouter = require('./routes/dishRouter');
-var promoRouter = require('./routes/promotionRouter');
+var promoRouter = require('./routes/promoRouter');
 var leaderRouter = require('./routes/leaderRouter');
 
 const mongoose = require('mongoose');
@@ -29,6 +29,33 @@ app.use(logger('dev'));
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
+
+const auth = (req, res, next) => {
+  console.log(req.headers);
+  let authHeader = req.headers.authorization;
+  console.log(authHeader);
+  if (!authHeader){
+    let err =new Error('You are not authorized');
+    res.setHeader('WWW-Authenticate', 'Basic');
+    err.status = 401;
+    next(err);
+    return;
+  }
+  var auth = new Buffer(authHeader.split(' ')[1], 'base64').toString();
+  var user = auth[0];
+  var pwd = auth[1];
+
+  if (user === 'admin' && pwd === 'password') {
+    next(); // user is authorized
+  } else {
+    let err =new Error(`You are not authenticated with ${user}: ${pwd}`);
+    res.setHeader('WWW-Authenticate', 'Basic');
+    err.status = 401;
+    next(err);
+  }
+};
+app.use(auth);
+
 app.use(express.static(path.join(__dirname, 'public')));
 
 app.use('/', indexRouter);

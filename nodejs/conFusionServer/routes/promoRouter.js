@@ -1,14 +1,14 @@
 const express = require('express');
 const bodyParser = require('body-parser');
-const promotionRouter = express.Router();
+const promoRouter = express.Router();
 
 const Promotions = require('../models/promotions');
 
 
-promotionRouter.use(bodyParser.json());
+promoRouter.use(bodyParser.json());
 
 // add all the methods for the / endpoint
-promotionRouter.route('/').all((req, res, next) => {
+promoRouter.route('/').all((req, res, next) => {
     res.statusCode = 200;
     res.setHeader('Content-Type', 'text/plain');
     next();
@@ -36,7 +36,7 @@ promotionRouter.route('/').all((req, res, next) => {
 });
 
 // add all the endpoints for the /:promotionId endpoint
-promotionRouter.route('/:promotionId')
+promoRouter.route('/:promotionId')
 .get((req,res,next) => {
     Promotions.findById(req.params.promotionId).then(promotion => {
         res.statusCode = 200;
@@ -64,4 +64,4 @@ promotionRouter.route('/:promotionId')
         }, err => next(err)).catch(err => next(err))
 });
 // export the router so that we can use it in index.js
-module.exports = promotionRouter;
+module.exports = promoRouter;
