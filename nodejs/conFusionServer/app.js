@@ -28,30 +28,45 @@ app.set('view engine', 'jade');
 app.use(logger('dev'));
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
-app.use(cookieParser());
+app.use(cookieParser('12345-67890-09876-54321'));
 
 const auth = (req, res, next) => {
-  console.log(req.headers);
-  let authHeader = req.headers.authorization;
-  console.log(authHeader);
-  if (!authHeader){
-    let err =new Error('You are not authorized');
-    res.setHeader('WWW-Authenticate', 'Basic');
-    err.status = 401;
-    next(err);
-    return;
-  }
-  var auth = new Buffer(authHeader.split(' ')[1], 'base64').toString();
-  var user = auth[0];
-  var pwd = auth[1];
+  console.log(req.signedCookies);
+  if (!req.signedCookies.user)  {
+    console.log(req.headers);
+    let authHeader = req.headers.authorization;
+    console.log(authHeader);
+    if (!authHeader){
+      let err =new Error('You are not authorized, no auth header');
+      res.setHeader('WWW-Authenticate', 'Basic');
+      err.status = 401;
+      next(err);
+      return;
+    }
+    var auth = new Buffer(authHeader.split(' ')[1], 'base64').toString().split(':');
+    var user = auth[0];
+    var pwd = auth[1];
 
-  if (user === 'admin' && pwd === 'password') {
-    next(); // user is authorized
+    console.log('first login');
+    if (user === 'admin' && pwd === 'password') {
+      res.cookie('user', 'admin', {signed: true})
+      next(); // user is authorized
+    } else {
+      let err =new Error(`You are not authenticated with ${user}: ${pwd}`);
+      res.setHeader('WWW-Authenticate', 'Basic');
+      err.status = 401;
+      next(err);
+    }
   } else {
-    let err =new Error(`You are not authenticated with ${user}: ${pwd}`);
-    res.setHeader('WWW-Authenticate', 'Basic');
-    err.status = 401;
-    next(err);
+    console.log('subsequent login');
+    let cookie = req.signedCookies;
+    if (cookie.user !== 'admin') {
+      let err =new Error(`You are not authenticated`);
+      err.status = 401;
+      next(err);
+    } else {
+      next();
+    }
   }
 };
 app.use(auth);
