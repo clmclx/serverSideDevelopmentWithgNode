@@ -38,36 +38,19 @@ app.use(session({
   resave: false,
   store: new FileStore()
 }));
-const auth = (req, res, next) => {
-  console.log(req.session);
-  if (!req.session.user)  {
-    console.log(req.headers);
-    let authHeader = req.headers.authorization;
-    console.log(authHeader);
-    if (!authHeader){
-      let err =new Error('You are not authorized, no auth header');
-      res.setHeader('WWW-Authenticate', 'Basic');
-      err.status = 401;
-      next(err);
-      return;
-    }
-    var auth = new Buffer(authHeader.split(' ')[1], 'base64').toString().split(':');
-    var user = auth[0];
-    var pwd = auth[1];
 
-    console.log('first login');
-    if (user === 'admin' && pwd === 'password') {
-      req.session.user = 'admin';
-      next(); // user is authorized
-    } else {
-      let err =new Error(`You are not authenticated with ${user}: ${pwd}`);
-      res.setHeader('WWW-Authenticate', 'Basic');
-      err.status = 401;
-      next(err);
-    }
+// the root and users endpoint have to be accessible withouth being authenticated so we are putting this above the authentication function
+app.use('/', indexRouter);
+app.use('/users', usersRouter);
+
+// the authentication function
+const auth = (req, res, next) => {
+  if (!req.session.user)  {
+    let err =new Error(`You are not authenticated `);
+    err.status = 401;
+    next(err);
   } else {
-    console.log('subsequent login');
-    if (req.session.user !== 'admin') {
+    if (req.session.user !== 'authenticated') {
       let err =new Error(`You are not authenticated`);
       err.status = 401;
       next(err);
@@ -79,9 +62,6 @@ const auth = (req, res, next) => {
 app.use(auth);
 
 app.use(express.static(path.join(__dirname, 'public')));
-
-app.use('/', indexRouter);
-app.use('/users', usersRouter);
 app.use('/dishes', dishesRouter);
 app.use('/promotions', promoRouter);
 app.use('/leaders', leaderRouter);
