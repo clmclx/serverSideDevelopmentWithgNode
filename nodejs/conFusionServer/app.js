@@ -16,8 +16,9 @@ var leaderRouter = require('./routes/leaderRouter');
 
 const mongoose = require('mongoose');
 const Dishes = require('./models/dishes');
+const config = require("./config");
 
-const url = 'mongodb://localhost:27017/conFusion';
+const url = config.mongoUrl;
 const connect = mongoose.connect(url);
 connect.then(db => {
   console.log('Correctly connected to the db');
@@ -45,18 +46,6 @@ app.use(passport.session());
 // the root and users endpoint have to be accessible withouth being authenticated so we are putting this above the authentication function
 app.use('/', indexRouter);
 app.use('/users', usersRouter);
-
-// the authentication function
-const auth = (req, res, next) => {
-  if (!req.user)  {
-    let err =new Error(`You are not authenticated `);
-    err.status = 401;
-    next(err);
-  } else {
-    next();
-  }
-};
-app.use(auth);
 
 app.use(express.static(path.join(__dirname, 'public')));
 app.use('/dishes', dishesRouter);
