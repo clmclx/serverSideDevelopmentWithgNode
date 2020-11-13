@@ -27,7 +27,7 @@ exports.getToken = (user) => {
              return done(err, false);
          } else {
              if (user) {
-                 return done(null, true);
+                 return done(null, user);
              } else {
                  return done(null, false);
              }
