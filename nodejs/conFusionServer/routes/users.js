@@ -1,19 +1,25 @@
 var express = require('express');
 var router = express.Router();
 const bodyParser = require('body-parser');
-const User = require('./../models/users');
+const Users = require('./../models/users');
 const passport = require('passport');
 const authenticate = require('../authenticate');
 
 router.use(bodyParser.json());
 
 /* GET users listing. */
-router.get('/', function(req, res, next) {
-  res.send('respond with a resource');
+router.get('/',authenticate.verifyUser, authenticate.verifyAdmin, (req, res, next) => {
+  Users.find({})
+      .then(users => {
+        res.statusCode = 200;
+        res.setHeader('Content-Type', 'application/json');
+        res.json(users);
+      }, (err) => next(err))
+      .catch(err => next(err))
 });
 
 router.post('/signup', (req, res) => {
-  User.register(
+  Users.register(
       new User({username: req.body.username}),
       req.body.password,
       (err, user) =>{
@@ -67,6 +73,5 @@ router.get('/logout', (req, res) => {
     next(err)
   }
 });
-
 
 module.exports = router;
