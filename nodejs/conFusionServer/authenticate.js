@@ -12,6 +12,29 @@ exports.getToken = (user) => {
     return jwt.sign(user, config.secretKey, {expiresIn: 3600});
 };
 
+exports.verifyAdmin = (req, res, next) => {
+    console.log('verifying admin');
+    User.findOne({_id: req.user._id}, (err, user) => {
+        if (err) {
+            next(err);
+        } else {
+            if (user) {
+                if (user.admin) {
+                    next();
+                } else {
+                    err = new Error("user is not an admin");
+                    err.status = 403;
+                    next(err);
+                }
+            } else {
+                err = new Error("user not found");
+                err.status = 404;
+                next(err);
+            }
+        }
+    })
+};
+
 
 // options when checking the token in requests
  const opts = {
@@ -21,7 +44,6 @@ exports.getToken = (user) => {
 
  // used to retrieved the token
  exports.jwtPassport = passport.use(new JwtStrategy(opts, (jwt_payload, done) => {
-     console.log(`jwt payload ${jwt_payload}`);
      User.findOne({_id: jwt_payload._id}, (err, user) => {
          if (err) {
              return done(err, false);
