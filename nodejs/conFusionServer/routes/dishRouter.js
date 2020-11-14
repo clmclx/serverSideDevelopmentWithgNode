@@ -176,6 +176,12 @@ dishRouter.route('/:dishId/comments/:commentId')
         Dishes.findById(req.params.dishId)
             .then((dish) => {
                 if (dish != null && dish.comments.id(req.params.commentId) != null) {
+                    if (!dish.comments.id(req.params.commentId).author.equals(req.user._id)) {
+                        console.log('not the same');
+                        err = new Error("user is not authorized to update comment");
+                        err.status = 403;
+                        next(err);
+                    }
                     if (req.body.rating) {
                         dish.comments.id(req.params.commentId).rating = req.body.rating;
                     }
@@ -207,6 +213,12 @@ dishRouter.route('/:dishId/comments/:commentId')
         Dishes.findById(req.params.dishId)
             .then((dish) => {
                 if (dish != null && dish.comments.id(req.params.commentId) != null) {
+                    if (!dish.comments.id(req.params.commentId).author.equals(req.user._id)) {
+                        console.log('not the same');
+                        err = new Error("user is not authorized to update comment");
+                        err.status = 403;
+                        next(err);
+                    }
                     dish.comments.id(req.params.commentId).remove();
                     dish.save()
                         .then((dish) => {
