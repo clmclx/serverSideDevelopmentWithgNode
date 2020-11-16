@@ -8,11 +8,11 @@ const FileStore = require('session-file-store')(session);
 const passport = require('passport');
 const authenticate = require('./authenticate');
 
-var indexRouter = require('./routes/index');
-var usersRouter = require('./routes/users');
-var dishesRouter = require('./routes/dishRouter');
-var promoRouter = require('./routes/promoRouter');
-var leaderRouter = require('./routes/leaderRouter');
+const indexRouter = require('./routes/index');
+const usersRouter = require('./routes/users');
+const dishesRouter = require('./routes/dishRouter');
+const promoRouter = require('./routes/promoRouter');
+const leaderRouter = require('./routes/leaderRouter');
 
 const mongoose = require('mongoose');
 const Dishes = require('./models/dishes');
@@ -24,7 +24,18 @@ connect.then(db => {
   console.log('Correctly connected to the db');
 });
 
-var app = express();
+const app = express();
+app.all('*', (req, res, next) => {
+  if (req.secure) {
+    return next();
+  } else {
+    // redirect to the secure server and change the redirection code
+    res.redirect(`https://${req.hostname}:${app.get('secPort')}${req.url}`);
+    res.statusCode = 307; // 307 says that the target resource is hosted on a different URI and user agent must not change the request method
+  }
+
+});
+
 
 // view engine setup
 app.set('views', path.join(__dirname, 'views'));
