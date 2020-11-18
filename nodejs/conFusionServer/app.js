@@ -1,21 +1,19 @@
 var createError = require('http-errors');
 var express = require('express');
 var path = require('path');
-var cookieParser = require('cookie-parser');
 var logger = require('morgan');
 const session  = require('express-session');
 const FileStore = require('session-file-store')(session);
 const passport = require('passport');
-const authenticate = require('./authenticate');
 
 const indexRouter = require('./routes/index');
 const usersRouter = require('./routes/users');
 const dishesRouter = require('./routes/dishRouter');
 const promoRouter = require('./routes/promoRouter');
 const leaderRouter = require('./routes/leaderRouter');
+const uploadRouter = require('./routes/uploadRouter');
 
 const mongoose = require('mongoose');
-const Dishes = require('./models/dishes');
 const config = require("./config");
 
 const url = config.mongoUrl;
@@ -25,13 +23,15 @@ connect.then(db => {
 });
 
 const app = express();
+
+//check whether it is coming from the secure port or not
 app.all('*', (req, res, next) => {
   if (req.secure) {
     return next();
   } else {
     // redirect to the secure server and change the redirection code
-    res.redirect(`https://${req.hostname}:${app.get('secPort')}${req.url}`);
-    res.statusCode = 307; // 307 says that the target resource is hosted on a different URI and user agent must not change the request method
+    console.log('insecure port');
+    res.redirect(307, `https://${req.hostname}:${app.get('secPort')}${req.url}`); // 307 says that the target resource is hosted on a different URI and user agent must not change the request method
   }
 
 });
@@ -62,6 +62,7 @@ app.use(express.static(path.join(__dirname, 'public')));
 app.use('/dishes', dishesRouter);
 app.use('/promotions', promoRouter);
 app.use('/leaders', leaderRouter);
+app.use('/imageUpload', uploadRouter);
 
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {

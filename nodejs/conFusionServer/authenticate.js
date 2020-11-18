@@ -13,7 +13,6 @@ exports.getToken = (user) => {
 };
 
 exports.verifyAdmin = (req, res, next) => {
-    console.log('verifying admin');
     User.findOne({_id: req.user._id}, (err, user) => {
         if (err) {
             next(err);
